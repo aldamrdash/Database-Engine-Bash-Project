@@ -1,0 +1,168 @@
+#!/bin/bash
+
+export LC_COLLATE=C
+shopt -s extglob
+
+DB_PROJECT_DIR="db_engine_project"
+selected_db=""
+
+# Check if the main project directory exists, if not, create it
+if [ ! -d "$DB_PROJECT_DIR" ]; then
+    mkdir "$DB_PROJECT_DIR"
+fi
+cd "$DB_PROJECT_DIR" || exit
+
+create_database() {
+    clear
+    read -p "Enter the name of the database: " dbname
+    if [[ ! $dbname =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]]; then
+        echo "Invalid database name. It should start with a letter or underscore and can only contain letters, numbers, or underscores."
+        return
+    fi
+
+    if [[ $dbname =~ [[:space:]] ]]; then
+        echo "Invalid database name. It cannot contain spaces."
+        return
+    fi
+
+    dbdir="${dbname}_db"
+
+    if [ -d "$dbdir" ]; then
+        echo "Error: Database '$dbname' already exists."
+    else
+        mkdir "$dbdir"
+        echo "Database '$dbname' created successfully."
+    fi
+}
+
+
+# Function to list existing databases
+
+list_databases() {
+    databases=$(ls -d *_db 2>/dev/null | sed 's/_db$//' | nl -w1 -s'. ')
+    if [ -z "$databases" ]; then
+        echo "No databases found."
+    else
+        echo "Available databases:"
+        echo "$databases"
+    fi
+}
+
+
+
+# Function to drop (delete) a database
+drop_database() {
+    echo "Existing databases:"
+    list_databases
+
+    read -p "Enter the name of the database to drop: " dbname
+    dbdir="${dbname}_db"
+
+    if [ -z "$dbname" ]; then
+        echo "Invalid choice. No database dropped."
+    elif [ ! -d "$dbdir" ]; then
+        echo "Error: Database '$dbname' not found."
+    else
+        rm -r "$dbdir"
+        echo "Database '$dbname' dropped successfully."
+    fi
+}
+
+# Function to connect to a database
+connect_database() {
+    echo "Existing databases:"
+    list_databases
+
+    read -p "Enter the name of the database to connect: " dbname
+    selected_db="${dbname}_db"
+
+    if [ ! -d "$selected_db" ]; then
+        echo "Error: Database '$dbname' not found."
+    else
+        echo "Connected to database '$selected_db'."
+        source db_operations  
+        db_menu  
+    fi
+}
+
+db_menu() {
+    while true; do
+        clear
+	echo "#######################################################"
+        echo "Database Operations Menu:"
+        echo "1. Create Table"
+        echo "2. List Tables"
+        echo "3. Insert into Table"
+        echo "4. Select from Table"
+        echo "5. Delete from Table"
+	echo "6. Drop Table"
+        echo "7. Back to Main Menu"
+
+
+        read -p "Choose an option (1-8): " db_choice
+
+        case $db_choice in
+            1)
+                create_table
+                ;;
+            2)
+                list_tables
+                ;;
+            3)
+                insert_into_table
+                ;;
+            4)
+                select_from_table
+                ;;
+            5)
+                delete_from_table
+                ;;
+
+	    6)
+                drop_table
+                ;;
+            7)
+                break
+                ;;
+            *)
+                echo "Invalid choice. Please enter a number between 1 and 7."
+                read -p "Press Enter to continue..."
+                ;;
+        esac
+    done
+}
+# Main menu
+clear
+while true; do
+	echo "#######################################################"
+    PS3="Choose an option (1-5): "
+    options=("Create Database" "List Databases" "Drop Database" "Connect to Database" "Quit")
+
+    select choice in "${options[@]}"; do
+        case $REPLY in
+            1)
+                create_database
+                break
+                ;;
+            2)
+                list_databases
+                break
+                ;;
+            3)
+                drop_database
+                break
+                ;;
+            4)
+                connect_database
+                break
+                ;;
+            5)
+                echo "Exiting. Goodbye!"
+                exit 0
+                ;;
+            *)
+                echo "Invalid choice. Please enter a number between 1 and 5."
+                ;;
+        esac
+    done
+done
