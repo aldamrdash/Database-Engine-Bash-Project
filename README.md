@@ -1,4 +1,4 @@
-# Database-Engine-Bash-Project
+# Database-Engine-Bash-Project-ITI
 This repo for ITI project of Bash Course 
 Database Engine Project
 This project consists of two bash script files that allow users to manage databases and perform basic operations within them. Below is a brief overview of the functionalities provided:
