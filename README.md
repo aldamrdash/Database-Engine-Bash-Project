@@ -33,3 +33,6 @@ How to Use:
 Run the first script to manage databases.
 Connect to a database of choice.
 Run the second script to perform operations within the connected database.
+
+Demo video :
+There is a demo video of run of project with some test cases in issues 
